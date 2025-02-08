@@ -1,112 +1,95 @@
-// Game Counters
-let machinePoints = 0;
+// Select the game div
+const game = document.querySelector(".game");
+
+// Select game display
+const display = game.lastElementChild;
+
+// Select displays
+const score = display.firstElementChild;
+const result = score.nextElementSibling.nextElementSibling;
+const winner = display.lastElementChild;
+
+// Select game controls
+const controls = document.querySelectorAll(".control");
+
+// Add event listener to each control
+controls.forEach((button) => {
+  button.addEventListener("click", function (e) {
+    let gameWinner = playRound(e.target.id, getMachineChoice());
+
+    // If playing a round results in returning a winner
+    if (gameWinner) {
+      // Display the winner
+      winner.textContent = gameWinner;
+      resetGame(); // reset the game
+    } else {
+      // Else continue playing next round
+      winner.textContent = null;
+    }
+  });
+});
+
+// Score counters
 let userPoints = 0;
-let rounds = 5;
+let machinePoints = 0;
 
-// Choose a random integer which is greater than or equal to 0 and less than 3 (i.e., return random integer from 0, 1, and 2)
-function chooseRandomInt() {
-  let randomInt = Math.floor(Math.random() * 3);
-  return randomInt;
-}
-
-// Randomly return Rock, Paper or Scissor as the machine's choice
-function getMachineChoice() {
-  let choice = chooseRandomInt();
-  let outcome;
-
-  if (choice === 0) {
-    outcome = "Rock";
-  } else if (choice === 1) {
-    outcome = "Paper";
-  } else {
-    // when chooseRandomInt() returns 2
-    outcome = "Scissor";
-  }
-
-  return outcome;
-}
-
-// Get user's choice and return Rock, Paper or Scissor as outcome
-function getUserChoice() {
-  let choice = parseInt(
-    prompt(
-      `Please enter your choice:\n(Enter 1 for 'Rock', 2 for 'Paper', 3 for 'Scissor' or 0 to EXIT)\nCurrent user score: ${userPoints} | Current machine score: ${machinePoints}\nRounds left: ${rounds}`
-    )
-  );
-  let outcome;
-
-  if (choice === 0) {
-    outcome = undefined;
-  } else if (choice === 1) {
-    outcome = "Rock";
-  } else if (choice === 2) {
-    outcome = "Paper";
-  } else if (choice === 3) {
-    outcome = "Scissor";
-  } else {
-    // when integer of choice is NOT from valid options 1, 2 or 3
-    outcome = null;
-  }
-
-  return outcome;
-}
-
-// Play a round using machine's and user's outcomes and return the result
-function playRound(userOutcome, machineOutcome) {
-  let result;
-
-  if (userOutcome === undefined) {
-    result = "Game aborted!";
-    rounds = 0;
-  } else if (userOutcome === null || userOutcome === machineOutcome) {
-    result = "No winner!";
+// Play a round of Rock Paper Scissor using the user's input and randomly selected machine's choice
+function playRound(userChoice, machineChoice) {
+  // Conditionals based on game's rules
+  if (userChoice === machineChoice) {
+    // when machine's and user's choices are same
+    result.textContent = "Draw!";
   } else if (
-    (userOutcome === "Rock" && machineOutcome === "Paper") ||
-    (userOutcome === "Paper" && machineOutcome === "Scissor") ||
-    (userOutcome === "Scissor" && machineOutcome === "Rock")
+    // paper beats rock, scissor beats paper, and rock beats scissor
+    (userChoice === "rock" && machineChoice === "paper") ||
+    (userChoice === "paper" && machineChoice === "scissor") ||
+    (userChoice === "scissor" && machineChoice === "rock")
   ) {
     machinePoints++;
-    result = `User Lost! ${userOutcome} is defeated by ${machineOutcome}.`;
-    rounds--;
+    result.textContent = `Loss! ${capitaliseString(
+      userChoice
+    )} cannot defeat ${capitaliseString(machineChoice)}.`;
   } else {
-    // when the conditional "(userOutcome === "Rock" && machineOutcome === "Scissor") || (userOutcome === "Paper" && machineOutcome === "Rock") || (userOutcome === "Scissor" && machineOutcome === "Paper")" is true
+    // all the other outcomes
     userPoints++;
-    result = `User Won! ${userOutcome} defeats ${machineOutcome}.`;
-    rounds--;
+    result.textContent = `Win! ${capitaliseString(
+      userChoice
+    )} defeats ${capitaliseString(machineChoice)}.`;
   }
 
-  return result;
+  // Display current score
+  score.textContent = `Current score: User(${userPoints}) and Machine(${machinePoints})`;
+
+  // If either of user or machine reaches maximum of 5 points after finishing playing a round return a winner
+  if (userPoints === 5 || machinePoints === 5) {
+    if (userPoints > machinePoints) {
+      return "User wins the game!";
+    } else {
+      return "Machine wins the game!";
+    }
+  }
 }
 
-// Play the game consisting of 5 rounds and log the winner
-function playGame() {
-  console.log("START GAME");
+// Get randomly selected machine's choice for a round
+function getMachineChoice() {
+  let randomChoice = Math.floor(Math.random() * 3);
 
-  let gameWinner;
-
-  for (let i = 0; rounds > 0; i++) {
-    let roundWinner = playRound(getUserChoice(), getMachineChoice());
-
-    console.log(`[ROUND ${i + 1}] ${roundWinner}`);
-  }
-
-  if (userPoints > machinePoints) {
-    gameWinner = "User";
-  } else if (userPoints < machinePoints) {
-    gameWinner = "Machine";
+  if (randomChoice === 0) {
+    return "rock";
+  } else if (randomChoice === 1) {
+    return "paper";
   } else {
-    gameWinner = "Nobody";
+    return "scissor";
   }
-
-  console.log(`${gameWinner} won the game!`);
-  resetGame();
 }
 
-// Reset all game counters after the game is over
-function resetGame() {
-  machinePoints = 0;
-  userPoints = 0;
-  rounds = 5;
+// Capitalise an all lowercase string
+function capitaliseString(string) {
+  return string.charAt(0).toUpperCase().concat("", string.slice(1));
+}
 
-  console.log("GAME OVER");
+// Reset game score counters
+function resetGame() {
+  userPoints = 0;
+  machinePoints = 0;
 }
